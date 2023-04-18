@@ -7,8 +7,16 @@ const coursRoutes = require("./routes/cours-routes");
 
 const app = express();
 
-app.use(profsRoutes);
-//app.use(etudiantsRoutes);
+app.use("/api/professeurs", profsRoutes);
+app.use("/api/cours", coursRoutes);
+
+app.use((error, requete, reponse, next) => {
+    if(reponse.headerSent){
+    return next(error);
+    }
+    reponse.status(error.code || 500);
+    reponse.json({message: error.message || "Une erreur inconnue est survenue" })});
+
 //app.use(coursRoutes);
 
 app.listen(5000);
