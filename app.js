@@ -8,8 +8,8 @@ const coursRoutes = require("./routes/cours-routes");
 const app = express();
 
 app.use(profsRoutes);
-app.use(etudiantsRoutes);
-app.use(coursRoutes);
+//app.use(etudiantsRoutes);
+//app.use(coursRoutes);
 
 app.listen(5000);
 
