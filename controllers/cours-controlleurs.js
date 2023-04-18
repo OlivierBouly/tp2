@@ -15,7 +15,6 @@ const getCoursById = (requete, reponse, next) => {
     const cours = COURS.find(cours => {
         return cours.id === coursId;
     })
-    console.log("Requête GET dans cours-routes")
     if(!cours){
         return next(new HttpErreur("Aucun cours avec le id fourni", 404));
     } else {
