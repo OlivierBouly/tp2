@@ -1,6 +1,9 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 
+const mongoose = require("mongoose");
+mongoose.set('strictQuery', true);
+
 const profsRoutes = require("./routes/profs-routes");
 const etudiantsRoutes = require("./routes/etudiants-routes");
 const coursRoutes = require("./routes/cours-routes");
@@ -22,6 +25,16 @@ app.use((error, requete, reponse, next) => {
 
 app.use((requete, reponse, next) => {
     return next(new HttpErreur("Route non trouvée", 404));
+});
+
+mongoose
+.connect("mongodb://127.0.0.1:27017")
+.then(() => {
+    app.listen(5000)
+    console.log("Connexion à la base de données réussie");
+})
+.catch(erreur => {
+    console.log(erreur);
 });
 
 app.listen(5000);
