@@ -3,7 +3,7 @@ const {v4 : uuidv4} = require("uuid");
 
 const HttpErreur = require("../models/http-erreur");
 
-const PROFS = [
+let PROFS = [
   {
       id: "p1",
       nom: "Bouly",
@@ -28,14 +28,13 @@ const getProfById = (requete, reponse, next) => {
   };
 
   const creerProf = ((requete, reponse, next) => {
-      const {id, nom, prenom, cours} = requete.body;
+      const {nom, prenom} = requete.body;
       console.log(requete.body);
-
       const nouveauProf ={
         id: uuidv4(),
-        nom,
-        prenom,
-        cours,
+        nom: nom,
+        prenom: prenom,
+        cours: []
       }
 
       PROFS.push(nouveauProf);
@@ -44,16 +43,15 @@ const getProfById = (requete, reponse, next) => {
   })
 
   const updateProf = (requete, reponse, next) => {
-    const {cours} = requete.body;
+    const {nom, prenom, cours} = requete.body;
     const profId = requete.params.profId;
 
-    //Créer une copie de la place, changer la copie puis remplacer l'originale dans le tableau par la copie.
-    //const placeModifiee = PLACE.find(place => place.id === placeId);
-    //L'opérateur ... fait une copie de toutes les pairs clé/valeur, donc de la place elle-même
       const profModifiee = {...PROFS.find(prof => prof.id === profId)};
       const indiceProf = PROFS.findIndex(prof => prof.id === profId);
 
-      profModifiee.cours = PROFS[indiceProf].cours.concat(cours);
+      profModifiee.cours = cours
+      profModifiee.nom = nom;
+      profModifiee.prenom = prenom;
 
       PROFS[indiceProf] = profModifiee;
 
@@ -65,7 +63,7 @@ const getProfById = (requete, reponse, next) => {
     
     const profId = requete.params.profId;
     PROFS = PROFS.filter(prof => prof.id !== profId);
-    reponse.status(200).json({message: "Prof supprimée"});
+    reponse.status(200).json({message: "Professeur supprimée"});
   };
   
   exports.getProfById = getProfById;

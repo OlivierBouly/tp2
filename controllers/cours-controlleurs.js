@@ -1,12 +1,14 @@
 const {v4 : uuidv4} = require("uuid");
 const HttpErreur = require("../models/http-erreur")
 
-const COURS = [
+let COURS = [
     {
         id: "c1",
         titre: "Math",
-        nbEtudiant: "15",
-        professeur: ""
+        professeur: "",
+        etudiants: [
+
+        ]
     }
 ];
 
@@ -23,7 +25,7 @@ const getCoursById = (requete, reponse, next) => {
     };
 
 const inscription = (requete, reponse, next) => {
-    const {id, titre, nbEtudiant, professeur} = requete.body;
+    const {titre, professeur, etudiants} = requete.body;
 
     const coursExiste = COURS.find(c => c.titre === titre);
     if(coursExiste){
@@ -33,8 +35,8 @@ const inscription = (requete, reponse, next) => {
     const nouveauCours = {
         id: uuidv4(),
         titre,
-        nbEtudiant,
-        professeur
+        professeur: professeur,
+        etudiants
     }
 
     COURS.push(nouveauCours);
