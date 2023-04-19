@@ -1,6 +1,7 @@
 const { response } = require("express");
 const {v4 : uuidv4} = require("uuid");
 const Professeur = require("../models/professeur");
+const Cours = require('../models/cours');
 const mongoose = require('mongoose');
 const MongoClient = require('mongodb').MongoClient;
 
@@ -103,11 +104,36 @@ const getProfById = async (requete, reponse, next) => {
 
   };
 
-  const supprimerProf = (requete, reponse, next) => { 
-    
+  const supprimerProf = async (requete, reponse, next) => { 
     const profId = requete.params.profId;
-    PROFS = PROFS.filter(prof => prof.id !== profId);
-    reponse.status(200).json({message: "Professeur supprimé"});
+    let prof;
+    try {
+      profObjId = new mongoose.Types.ObjectId(profId)
+
+      prof = await Professeur.findById(profObjId).populate("cours");
+
+    } catch (err){
+      console.log(err)
+      return next(
+        new HttpErreur("Erreur lors de la suppression du prof", 500)
+      );
+    }
+    if(!prof){
+      return next(new HttpErreur("Impossible de trouver le prof", 404));
+    }
+  
+    try{
+      await prof.deleteOne();
+      //prof.cours.professeur.deleteOne();
+      //await prof.cours.save()
+  
+    }catch (err){
+      console.log(err);
+      return next(
+        new HttpErreur("Erreur lors de la suppression du prof", 500)
+      );
+    }
+    reponse.status(200).json({ message: "Professeur supprimée" });
   };
   
   exports.getProfById = getProfById;
