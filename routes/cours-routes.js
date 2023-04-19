@@ -7,6 +7,10 @@ const router = express.Router();
 
 router.get('/:coursId', controleursCours.getCoursById);
 
-router.post('/inscriptionCours', controleursCours.inscription);
+router.post('/', controleursCours.creerCours);
+
+router.patch('/:coursId', controleursCours.updateCours);
+
+router.delete('/:coursId', controleursCours.supprimerCours);
 
     module.exports = router;

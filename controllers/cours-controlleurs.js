@@ -1,3 +1,4 @@
+const { response } = require("express");
 const {v4 : uuidv4} = require("uuid");
 const HttpErreur = require("../models/http-erreur")
 
@@ -24,8 +25,8 @@ const getCoursById = (requete, reponse, next) => {
     }
     };
 
-const inscription = (requete, reponse, next) => {
-    const {titre, professeur, etudiants} = requete.body;
+const creerCours = (requete, reponse, next) => {
+    const {titre} = requete.body;
 
     const coursExiste = COURS.find(c => c.titre === titre);
     if(coursExiste){
@@ -34,9 +35,9 @@ const inscription = (requete, reponse, next) => {
 
     const nouveauCours = {
         id: uuidv4(),
-        titre,
-        professeur: professeur,
-        etudiants
+        titre: titre,
+        professeur: "",
+        etudiants: []
     }
 
     COURS.push(nouveauCours);
@@ -44,5 +45,32 @@ const inscription = (requete, reponse, next) => {
     reponse.status(201).json(nouveauCours);
 };
 
+const updateCours = (requete, reponse, next) => {
+    const {titre, professeur, etudiants} = requete.body;
+    const coursId = requete.params.coursId;
+
+      const coursModifiee = {...COURS.find(cours => cours.id === coursId)};
+      const indiceCours = COURS.findIndex(cours => cours.id === coursId);
+
+      coursModifiee.id = coursId;
+      coursModifiee.titre = titre
+      coursModifiee.professeur = professeur;
+      coursModifiee.etudiants = etudiants;
+
+      COURS[indiceCours] = coursModifiee;
+
+      reponse.status(200).json({cours:coursModifiee});
+
+  };
+
+  const supprimerCours = (requete, reponse, next) => { 
+    
+    const coursId = requete.params.coursId;
+    COURS = COURS.filter(cours => cours.id !== coursId);
+    reponse.status(200).json({message: "Cours supprimé"});
+  };
+
 exports.getCoursById = getCoursById;
-exports.inscription = inscription;
+exports.creerCours = creerCours;
+exports.updateCours = updateCours;
+exports.supprimerCours = supprimerCours;

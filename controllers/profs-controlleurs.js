@@ -63,7 +63,7 @@ const getProfById = (requete, reponse, next) => {
     
     const profId = requete.params.profId;
     PROFS = PROFS.filter(prof => prof.id !== profId);
-    reponse.status(200).json({message: "Professeur supprimée"});
+    reponse.status(200).json({message: "Professeur supprimé"});
   };
   
   exports.getProfById = getProfById;
