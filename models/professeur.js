@@ -9,4 +9,4 @@ const professeurSchema = new Schema({
     cours:[{type: mongoose.Types.ObjectId, required: false, ref:"Cours"}]
 });
 
-module.exports = mongoose.model("Professeur", placeSchema);
+module.exports = mongoose.model("Professeur", professeurSchema);

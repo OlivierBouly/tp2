@@ -3,13 +3,13 @@ const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 
-const coursSchema = new Schema({
+const etudiantSchema = new Schema({
     id:{type: String, required: true},
-    titre: {type: String, required: true, unique:true},
-    professeur: {type: mongoose.Types.ObjectId, required: false, ref:"Professeur"},
-    etudiants: [{type: mongoose.Types.ObjectId, required: false, ref:"Etudiant"}]
+    nom: {type: String, required: true, unique:true},
+    prenom: {type: String, required: true, unique:true},
+    cours: [{type: mongoose.Types.ObjectId, required: false, ref:"Cours"}]
 });
 
 
 
-module.exports = mongoose.model("Etudiant", utilsateurSchema);
+module.exports = mongoose.model("Etudiant", etudiantSchema);

@@ -12,4 +12,4 @@ const coursSchema = new Schema({
 
 
 
-module.exports = mongoose.model("Cours", utilsateurSchema);
+module.exports = mongoose.model("Cours", coursSchema);

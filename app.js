@@ -15,6 +15,7 @@ app.use(bodyParser.json());
 
 app.use("/api/professeurs", profsRoutes);
 app.use("/api/cours", coursRoutes);
+app.use("/api/etudiants", etudiantsRoutes);
 
 app.use((error, requete, reponse, next) => {
     if(reponse.headerSent){
