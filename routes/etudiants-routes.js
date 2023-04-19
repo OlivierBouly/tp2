@@ -7,4 +7,10 @@ const router = express.Router();
 
 router.get('/:etudiantId', controleursEtudiants.getEtudiantById);
 
+router.post('/', controleursEtudiants.creerEtudiant);
+
+router.patch('/:etudiantId', controleursEtudiants.updateEtudiant);
+
+router.delete('/:etudiantId', controleursEtudiants.supprimerEtudiant);
+
 module.exports = router;
