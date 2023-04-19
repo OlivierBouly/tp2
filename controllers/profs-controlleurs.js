@@ -18,13 +18,11 @@ let PROFS = [
   ];
   
 const getProfById = async (requete, reponse, next) => {
-  let profId = requete.params.profId;
+  const profId = requete.params.profId;
   let prof;
   try {
 
-    profId = profId.substring(0, profId.length-1);
-
-    profObjId = new mongoose.Types.ObjectId(profId)
+    profObjId = new mongoose.Types.ObjectId(profId.substring(0, profId.length-1))
 
     prof = await Professeur.findById(profObjId);
   } catch (err) {
@@ -42,7 +40,6 @@ const getProfById = async (requete, reponse, next) => {
   const creerProf = (async (requete, reponse, next) => {
       const {nom, prenom} = requete.body;
       console.log(requete.body);
-      console.log(requete.params);
 
       let profExiste;
 
@@ -77,20 +74,32 @@ const getProfById = async (requete, reponse, next) => {
 
     });
 
-  const updateProf = (requete, reponse, next) => {
+  const updateProf = async (requete, reponse, next) => {
     const {nom, prenom, cours} = requete.body;
     const profId = requete.params.profId;
 
-      const profModifiee = {...PROFS.find(prof => prof.id === profId)};
-      const indiceProf = PROFS.findIndex(prof => prof.id === profId);
+    let prof;
 
-      profModifiee.cours = cours
-      profModifiee.nom = nom;
-      profModifiee.prenom = prenom;
+    try {
 
-      PROFS[indiceProf] = profModifiee;
+      profObjId = new mongoose.Types.ObjectId(profId)
 
-      reponse.status(200).json({prof:profModifiee});
+      prof = await Professeur.findById(profObjId);
+
+      prof.nom = nom;
+      prof.prenom = prenom;
+      prof.cours = cours;
+      await prof.save();
+    } catch(err) {
+
+      console.log(err)
+
+      return next(
+        new HttpErreur("Erreur lors de la mise à jour du prof", 500)
+      );
+    }
+  
+    reponse.status(200).json({ prof: prof.toObject({ getters: true }) });
 
   };
 
