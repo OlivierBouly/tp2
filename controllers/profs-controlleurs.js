@@ -6,17 +6,6 @@ const mongoose = require('mongoose');
 const MongoClient = require('mongodb').MongoClient;
 
 const HttpErreur = require("../models/http-erreur");
-
-let PROFS = [
-  {
-      id: "p1",
-      nom: "Bouly",
-      prenom: "Olivier",
-      cours: [
-
-      ]
-  }
-  ];
   
 const getProfById = async (requete, reponse, next) => {
   const profId = requete.params.profId;
@@ -33,7 +22,7 @@ const getProfById = async (requete, reponse, next) => {
     );
   }
   if (!prof) {
-    return next(new HttpErreur("Aucune place trouvée pour l'id fourni", 404));
+    return next(new HttpErreur("Aucune prof trouvée pour l'id fourni", 404));
   }
   reponse.json({ prof: prof.toObject({ getters: true }) });
 };
@@ -106,31 +95,37 @@ const getProfById = async (requete, reponse, next) => {
 
   const supprimerProf = async (requete, reponse, next) => { 
     const profId = requete.params.profId;
+
+    profObjId = new mongoose.Types.ObjectId(profId)
+
     let prof;
     try {
-      profObjId = new mongoose.Types.ObjectId(profId)
-
-      prof = await Professeur.findById(profObjId).populate("cours");
-
+      prof = await Professeur.findById(profId).populate("cours");
+      console.log(prof);
     } catch (err){
       console.log(err)
       return next(
-        new HttpErreur("Erreur lors de la suppression du prof", 500)
+        new HttpErreur("Erreur lors de la suppression du prof1", 500)
       );
     }
     if(!prof){
       return next(new HttpErreur("Impossible de trouver le prof", 404));
     }
-  
+
     try{
-      await prof.deleteOne();
-      //prof.cours.professeur.deleteOne();
-      //await prof.cours.save()
+
+      console.log(profId)
+      console.log(profObjId)
+
+      Cours.updateMany({professeur: profObjId}, {professeur: null});
+      await prof.save()
+      console.log("apres" + prof)
+      await Professeur.deleteOne(prof);
   
     }catch (err){
       console.log(err);
       return next(
-        new HttpErreur("Erreur lors de la suppression du prof", 500)
+        new HttpErreur("Erreur lors de la suppression du prof2", 500)
       );
     }
     reponse.status(200).json({ message: "Professeur supprimée" });

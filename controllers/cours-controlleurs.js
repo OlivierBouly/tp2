@@ -1,6 +1,10 @@
 const { response } = require("express");
 const {v4 : uuidv4} = require("uuid");
 const HttpErreur = require("../models/http-erreur")
+const Professeur = require("../models/professeur");
+const Cours = require('../models/cours');
+const mongoose = require('mongoose');
+const MongoClient = require('mongodb').MongoClient;
 
 let COURS = [
     {
@@ -13,37 +17,61 @@ let COURS = [
     }
 ];
 
-const getCoursById = (requete, reponse, next) => {
+const getCoursById = async (requete, reponse, next) => {
     const coursId = requete.params.coursId
-    const cours = COURS.find(cours => {
-        return cours.id === coursId;
-    })
-    if(!cours){
-        return next(new HttpErreur("Aucun cours avec le id fourni", 404));
-    } else {
-        reponse.json({cours});
+    let cours;
+    try {
+  
+        coursObjId = new mongoose.Types.ObjectId(coursId.substring(0, coursId.length-1))
+  
+       cours = await Cours.findById(coursObjId);
+    } catch (err) {
+      console.log(err);
+      return next(
+        new HttpErreur("Erreur lors de la récupération du cours", 500)
+      );
     }
-    };
+    if (!cours) {
+      return next(new HttpErreur("Aucune cours trouvée pour l'id fourni", 404));
+    }
+    reponse.json({ cours: cours.toObject({ getters: true }) });
+  };
 
-const creerCours = (requete, reponse, next) => {
+const creerCours = async (requete, reponse, next) => {
     const {titre} = requete.body;
+    console.log(requete.body);
 
-    const coursExiste = COURS.find(c => c.titre === titre);
-    if(coursExiste){
-        throw new HttpErreur("Cours existe déjà", 422);
+    let coursExiste;
+
+    try {
+        coursExiste = await Cours.findOne({ titre: titre });
+    } catch {
+      return next(new HttpErreur("Échec vérification cours existe", 500));
+    }
+  
+    if (coursExiste) {
+      return next(
+        new HttpErreur("Cours existe deja", 422)
+      );
     }
 
-    const nouveauCours = {
-        id: uuidv4(),
-        titre: titre,
-        professeur: "",
-        etudiants: []
+    const nouveauCours = new Cours({
+      titre: titre,
+      professeur: null,
+      etudiants: []
+    });
+
+    try {
+      await nouveauCours.save();
+    } catch (err) {
+      console.log(err);
+      return next(new HttpErreur("Erreur lors de l'ajout du cours", 422));
     }
+    reponse
+      .status(201)
+      .json({ cours: nouveauCours.toObject({ getter: true }) });
 
-    COURS.push(nouveauCours);
-
-    reponse.status(201).json(nouveauCours);
-};
+  };
 
 const updateCours = (requete, reponse, next) => {
     const {titre, professeur, etudiants} = requete.body;
