@@ -27,7 +27,7 @@ app.use((error, requete, reponse, next) => {
 app.use((requete, reponse, next) => {
     return next(new HttpErreur("Route non trouvée", 404));
 });
-/*
+
 mongoose
 .connect("mongodb://127.0.0.1:27017")
 .then(() => {
@@ -37,6 +37,6 @@ mongoose
 .catch(erreur => {
     console.log(erreur);
 });
-*/
-app.listen(5000);
+
+//app.listen(5000);
 
