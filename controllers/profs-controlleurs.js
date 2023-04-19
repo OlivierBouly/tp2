@@ -112,13 +112,13 @@ const getProfById = async (requete, reponse, next) => {
       return next(new HttpErreur("Impossible de trouver le prof", 404));
     }
 
+    
+
     try{
 
-      console.log(profId)
-      console.log(profObjId)
+      prof.cours.forEach(cours => cours.professeur = null);
 
-      Cours.updateMany({professeur: profObjId}, {professeur: null});
-      await prof.save()
+      prof.cours.forEach(async cours =>await cours.save());
       console.log("apres" + prof)
       await Professeur.deleteOne(prof);
   
