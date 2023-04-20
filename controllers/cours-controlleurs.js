@@ -96,10 +96,10 @@ const updateCours = async (requete, reponse, next) => {
     const coursId = requete.params.coursId;
 
     let cours;
-
+    let prof
     try {
 
-        prof = await Professeur.findById(professeur);
+        prof = await Professeur.findById(professeur).populate(cours);
     } catch (err){
         console.log(err)
         return next(new HttpErreur("Création de cours échouée", 500));
@@ -111,15 +111,29 @@ const updateCours = async (requete, reponse, next) => {
     }
 
     try {
+        
+        coursObjId = new mongoose.Types.ObjectId(coursId)
 
-      coursObjId = new mongoose.Types.ObjectId(coursId)
+        cours = await Cours.findById(coursId).populate("professeur");
+        
+        cours.professeur.cours.pull(cours);
 
-      cours = await Cours.findById(coursId);
+        cours.professeur.save();
 
-      cours.titre = titre;
-      cours.professeur = professeur;
-      cours.etudiants = etudiants;
-      await cours.save();
+        cours.titre = titre;
+        cours.professeur = professeur;
+        cours.etudiants = etudiants;
+
+        index = prof.cours.findIndex(cours => cours._id === coursObjId);
+        if(index === -1){
+        prof.cours.push(cours);
+        } else {
+            prof.cours[index] = cours
+        }
+
+        await cours.save();
+        await prof.save();
+
     } catch(err) {
 
       console.log(err)
@@ -128,26 +142,40 @@ const updateCours = async (requete, reponse, next) => {
         new HttpErreur("Erreur lors de la mise à jour du cours", 500)
       );
     }
-    /*
-      const coursModifiee = {...COURS.find(cours => cours.id === coursId)};
-      const indiceCours = COURS.findIndex(cours => cours.id === coursId);
 
-      coursModifiee.id = coursId;
-      coursModifiee.titre = titre
-      coursModifiee.professeur = professeur;
-      coursModifiee.etudiants = etudiants;
-
-      COURS[indiceCours] = coursModifiee;
-*/
       reponse.status(200).json({cours:cours});
 
   };
 
-  const supprimerCours = (requete, reponse, next) => { 
-    
+  const supprimerCours = async (requete, reponse, next) => { 
     const coursId = requete.params.coursId;
-    COURS = COURS.filter(cours => cours.id !== coursId);
-    reponse.status(200).json({message: "Cours supprimé"});
+    coursObjId = new mongoose.Types.ObjectId(coursId)
+
+    let cours;
+    try {
+        cours = await Cours.findById(coursObjId).populate("professeur");
+        console.log(cours);
+    } catch (err){
+      console.log(err)
+      return next(
+        new HttpErreur("Erreur lors de la suppression du cours", 500)
+      );
+    }
+    if(!cours){
+      return next(new HttpErreur("Impossible de trouver le cours", 404));
+    }
+
+    try{
+        index = cours.professeur.cours.findIndex(cours => cours._id === coursObjId)
+        cours.professeur.cours[index].save()
+        await Cours.deleteOne(cours);
+    }catch (err){
+      console.log(err);
+      return next(
+        new HttpErreur("Erreur lors de la suppression du cours", 500)
+      );
+    }
+    reponse.status(200).json({ message: "Cours supprimée" });
   };
 
 exports.getCoursById = getCoursById;

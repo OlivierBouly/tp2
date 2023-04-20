@@ -112,8 +112,6 @@ const getProfById = async (requete, reponse, next) => {
       return next(new HttpErreur("Impossible de trouver le prof", 404));
     }
 
-    
-
     try{
 
       prof.cours.forEach(cours => cours.professeur = null);
