@@ -1,7 +1,12 @@
 const { response } = require("express");
 const {v4 : uuidv4} = require("uuid");
+const Professeur = require("../models/professeur");
+const Cours = require('../models/cours');
+const Etudiant = require('../models/etudiant');
+const mongoose = require('mongoose');
+const MongoClient = require('mongodb').MongoClient;
+
 const HttpErreur = require("../models/http-erreur");
-const e = require("express");
 
 let ETUDIANTS = [
     {

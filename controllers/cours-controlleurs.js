@@ -3,6 +3,7 @@ const {v4 : uuidv4} = require("uuid");
 const HttpErreur = require("../models/http-erreur")
 const Professeur = require("../models/professeur");
 const Cours = require('../models/cours');
+const Etudiant = require('../models/etudiant');
 const mongoose = require('mongoose');
 const etudiant = require("../models/etudiant");
 const MongoClient = require('mongodb').MongoClient;
