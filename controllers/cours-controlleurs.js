@@ -4,6 +4,7 @@ const HttpErreur = require("../models/http-erreur")
 const Professeur = require("../models/professeur");
 const Cours = require('../models/cours');
 const mongoose = require('mongoose');
+const etudiant = require("../models/etudiant");
 const MongoClient = require('mongodb').MongoClient;
 
 let COURS = [
@@ -90,10 +91,44 @@ const creerCours = async (requete, reponse, next) => {
 
   };
 
-const updateCours = (requete, reponse, next) => {
-    const {titre, profId, etudiants} = requete.body;
+const updateCours = async (requete, reponse, next) => {
+    const {titre, professeur, etudiants} = requete.body;
     const coursId = requete.params.coursId;
 
+    let cours;
+
+    try {
+
+        prof = await Professeur.findById(professeur);
+    } catch (err){
+        console.log(err)
+        return next(new HttpErreur("Création de cours échouée", 500));
+    }
+  
+    if (!prof) {
+        console.log(professeur);
+      return next(new HttpErreur("Professeur non trouvé selon le id"), 504);
+    }
+
+    try {
+
+      coursObjId = new mongoose.Types.ObjectId(coursId)
+
+      cours = await Cours.findById(coursId);
+
+      cours.titre = titre;
+      cours.professeur = professeur;
+      cours.etudiants = etudiants;
+      await cours.save();
+    } catch(err) {
+
+      console.log(err)
+
+      return next(
+        new HttpErreur("Erreur lors de la mise à jour du cours", 500)
+      );
+    }
+    /*
       const coursModifiee = {...COURS.find(cours => cours.id === coursId)};
       const indiceCours = COURS.findIndex(cours => cours.id === coursId);
 
@@ -103,8 +138,8 @@ const updateCours = (requete, reponse, next) => {
       coursModifiee.etudiants = etudiants;
 
       COURS[indiceCours] = coursModifiee;
-
-      reponse.status(200).json({cours:coursModifiee});
+*/
+      reponse.status(200).json({cours:cours});
 
   };
 
