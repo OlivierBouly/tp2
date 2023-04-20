@@ -4,7 +4,6 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const etudiantSchema = new Schema({
-    id:{type: String, required: true},
     nom: {type: String, required: true, unique:true},
     prenom: {type: String, required: true, unique:true},
     cours: [{type: mongoose.Types.ObjectId, required: false, ref:"Cours"}]

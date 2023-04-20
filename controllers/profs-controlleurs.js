@@ -119,7 +119,7 @@ const getProfById = async (requete, reponse, next) => {
       prof.cours.forEach(cours => cours.professeur = null);
 
       prof.cours.forEach(async cours =>await cours.save());
-      console.log("apres" + prof)
+
       await Professeur.deleteOne(prof);
   
     }catch (err){

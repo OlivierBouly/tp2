@@ -38,15 +38,16 @@ const getCoursById = async (requete, reponse, next) => {
   };
 
 const creerCours = async (requete, reponse, next) => {
-    const {titre} = requete.body;
+    const {titre, profId} = requete.body;
     console.log(requete.body);
 
     let coursExiste;
 
     try {
         coursExiste = await Cours.findOne({ titre: titre });
-    } catch {
-      return next(new HttpErreur("Échec vérification cours existe", 500));
+    } catch (err){
+        console.log(err)
+        return next(new HttpErreur("Échec vérification cours existe", 500));
     }
   
     if (coursExiste) {
@@ -57,24 +58,40 @@ const creerCours = async (requete, reponse, next) => {
 
     const nouveauCours = new Cours({
       titre: titre,
-      professeur: null,
+      professeur: profId,
       etudiants: []
     });
 
+    let prof;
+
     try {
-      await nouveauCours.save();
-    } catch (err) {
-      console.log(err);
-      return next(new HttpErreur("Erreur lors de l'ajout du cours", 422));
+        prof = await Professeur.findById(profId);
+    } catch (err){
+        console.log(err)
+        return next(new HttpErreur("Création de cours échouée", 500));
     }
-    reponse
-      .status(201)
-      .json({ cours: nouveauCours.toObject({ getter: true }) });
+  
+    if (!prof) {
+      return next(new HttpErreur("Professeur non trouvé selon le id"), 504);
+    }
+
+    try {
+ 
+        await nouveauCours.save();
+        prof.cours.push(nouveauCours);
+        await prof.save();
+
+      } catch (err) {
+        console.log(err)
+        const erreur = new HttpErreur("Création de cours échouée", 500);
+        return next(erreur);
+      }
+    reponse.status(201).json({ cours: nouveauCours.toObject({ getter: true }) });
 
   };
 
 const updateCours = (requete, reponse, next) => {
-    const {titre, professeur, etudiants} = requete.body;
+    const {titre, profId, etudiants} = requete.body;
     const coursId = requete.params.coursId;
 
       const coursModifiee = {...COURS.find(cours => cours.id === coursId)};
