@@ -166,8 +166,11 @@ const updateCours = async (requete, reponse, next) => {
     }
 
     try{
+
+        cours.professeur.cours.pull(cours);
+
         index = cours.professeur.cours.findIndex(cours => cours._id === coursObjId)
-        cours.professeur.cours[index].save()
+        cours.professeur.save()
         await Cours.deleteOne(cours);
     }catch (err){
       console.log(err);
