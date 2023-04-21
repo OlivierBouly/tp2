@@ -112,11 +112,38 @@ const creerEtudiant = (async (requete, reponse, next) => {
 
   };
 
-  const supprimerEtudiant = (requete, reponse, next) => { 
-    
+  const supprimerEtudiant = async (requete, reponse, next) => { 
     const etudiantId = requete.params.etudiantId;
-    ETUDIANTS = ETUDIANTS.filter(etudiant => etudiant.id !== etudiantId);
-    reponse.status(200).json({message: "Etudiant supprimé"});
+
+    etudiantObjId = new mongoose.Types.ObjectId(etudiantId)
+
+    let etudiant;
+    try {
+      etudiant = await Etudiant.findById(etudiantObjId).populate("cours");
+      console.log(etudiant);
+    } catch (err){
+      console.log(err)
+      return next(
+        new HttpErreur("Erreur lors de la suppression du etudiant", 500)
+      );
+    }
+    if(!etudiant){
+      return next(new HttpErreur("Impossible de trouver le etudiant", 404));
+    }
+
+    try{
+
+      etudiant.cours.forEach(async cours => {cours.etudiants.pull(etudiant); await cours.save()});
+
+      await Etudiant.deleteOne(etudiant);
+  
+    }catch (err){
+      console.log(err);
+      return next(
+        new HttpErreur("Erreur lors de la suppression du etudiant", 500)
+      );
+    }
+    reponse.status(200).json({ message: "Etudiant supprimée" });
   };
 
 
