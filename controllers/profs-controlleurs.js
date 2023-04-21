@@ -74,6 +74,7 @@ const getProfById = async (requete, reponse, next) => {
 
     try {
 
+      
       profObjId = new mongoose.Types.ObjectId(profId)
 
       prof = await Professeur.findById(profObjId);
