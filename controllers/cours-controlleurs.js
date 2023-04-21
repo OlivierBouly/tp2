@@ -171,7 +171,7 @@ const updateCours = async (requete, reponse, next) => {
 
     let cours;
     try {
-        cours = await Cours.findById(coursObjId).populate("professeur");
+        cours = await Cours.findById(coursObjId).populate("professeur").populate("etudiants");
         console.log(cours);
     } catch (err){
       console.log(err)
@@ -186,6 +186,8 @@ const updateCours = async (requete, reponse, next) => {
     try{
 
         cours.professeur.cours.pull(cours);
+
+        cours.etudiants.forEach(async etudiant => {etudiant.cours.pull(cours); await etudiant.save()});
 
         index = cours.professeur.cours.findIndex(cours => cours._id === coursObjId)
         cours.professeur.save()
