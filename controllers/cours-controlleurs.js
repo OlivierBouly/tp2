@@ -8,17 +8,6 @@ const mongoose = require('mongoose');
 const etudiant = require("../models/etudiant");
 const MongoClient = require('mongodb').MongoClient;
 
-let COURS = [
-    {
-        id: "c1",
-        titre: "Math",
-        professeur: "",
-        etudiants: [
-
-        ]
-    }
-];
-
 const getCoursById = async (requete, reponse, next) => {
     const coursId = requete.params.coursId
     let cours;

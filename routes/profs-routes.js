@@ -12,6 +12,8 @@ router.post('/', controleursProf.creerProf);
 
 router.patch('/:profId', controleursProf.updateProf);
 
+router.patch('/:profId/ajouterCours', controleursProf.ajouterCoursProf)
+
 router.delete('/:profId', controleursProf.supprimerProf);
 
     module.exports = router;

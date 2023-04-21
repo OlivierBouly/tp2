@@ -7,6 +7,7 @@ const mongoose = require('mongoose');
 const MongoClient = require('mongodb').MongoClient;
 
 const HttpErreur = require("../models/http-erreur");
+const cours = require("../models/cours");
   
 const getProfById = async (requete, reponse, next) => {
   const profId = requete.params.profId;
@@ -79,8 +80,16 @@ const getProfById = async (requete, reponse, next) => {
 
       prof.nom = nom;
       prof.prenom = prenom;
+      prof = await Professeur.findById(profObjId).populate("cours");
+      prof.cours.forEach(async cours => {cours.professeur = null; await cours.save()});
+
       prof.cours = cours;
       await prof.save();
+      prof = await Professeur.findById(profObjId).populate("cours");
+      prof.cours.forEach(cours => {if(!cours){return next(new HttpErreur("Impossible de trouver le cours", 404));}});
+
+      prof.cours.forEach(cours => cours.professeur = profObjId);
+      prof.cours.forEach(async cours => await cours.save());
     } catch(err) {
 
       console.log(err)
@@ -101,12 +110,12 @@ const getProfById = async (requete, reponse, next) => {
 
     let prof;
     try {
-      prof = await Professeur.findById(profId).populate("cours");
+      prof = await Professeur.findById(profObjId).populate("cours");
       console.log(prof);
     } catch (err){
       console.log(err)
       return next(
-        new HttpErreur("Erreur lors de la suppression du prof1", 500)
+        new HttpErreur("Erreur lors de la suppression du prof", 500)
       );
     }
     if(!prof){
@@ -124,13 +133,62 @@ const getProfById = async (requete, reponse, next) => {
     }catch (err){
       console.log(err);
       return next(
-        new HttpErreur("Erreur lors de la suppression du prof2", 500)
+        new HttpErreur("Erreur lors de la suppression du prof", 500)
       );
     }
     reponse.status(200).json({ message: "Professeur supprimée" });
   };
-  
+
+const ajouterCoursProf = async (requete, reponse, next) => {
+  const {coursId} = requete.body;
+  const profId = requete.params.profId;
+  profObjId = new mongoose.Types.ObjectId(profId);
+  coursObjId = new mongoose.Types.ObjectId(coursId);
+
+  let prof;
+  try {
+    prof = await Professeur.findById(profObjId);
+  } catch (err){
+    console.log(err)
+    return next(
+      new HttpErreur("Erreur lors de l'ajout du cours", 500)
+    );
+  }
+  if(!prof){
+    return next(new HttpErreur("Impossible de trouver le prof", 404));
+  }
+  if(!cours){
+    return next(new HttpErreur("Impossible de trouver le cours", 404));
+  }
+
+  if(prof.cours.includes(coursObjId)){return next(new HttpErreur("Le cours est deja assigne a ce professeur", 404)); }
+  try{
+
+    
+    prof.cours.push(coursObjId);
+    
+    await prof.save();
+    
+    index = prof.cours.findIndex(cours => cours === coursObjId);
+
+    prof = await Professeur.findById(profObjId).populate("cours");
+
+    prof.cours[index].professeur = profObjId;
+
+    await prof.cours[index].save()
+
+    await prof.save()
+
+    reponse.status(200).json({ prof: prof.toObject({ getters: true }) });
+  }catch(err){
+    console.log(err);
+    return next(
+      new HttpErreur("Erreur lors de l'ajout du cours", 500)
+    );
+  }
+}
   exports.getProfById = getProfById;
   exports.creerProf = creerProf;
   exports.updateProf = updateProf;
   exports.supprimerProf = supprimerProf;
+  exports.ajouterCoursProf = ajouterCoursProf
