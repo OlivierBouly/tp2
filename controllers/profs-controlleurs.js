@@ -80,6 +80,7 @@ const getProfById = async (requete, reponse, next) => {
 
       prof.nom = nom;
       prof.prenom = prenom;
+      await prof.save();
       prof = await Professeur.findById(profObjId).populate("cours");
       prof.cours.forEach(async cours => {cours.professeur = null; await cours.save()});
 
