@@ -75,20 +75,40 @@ const creerEtudiant = (async (requete, reponse, next) => {
 
   });
 
-const updateEtudiant = (requete, reponse, next) => {
+  const updateEtudiant = async (requete, reponse, next) => {
     const {nom, prenom, cours} = requete.body;
     const etudiantId = requete.params.etudiantId;
 
-      const etudiantModifiee = {...ETUDIANTS.find(etudiant => etudiant.id === etudiantId)};
-      const indiceEtudiant = ETUDIANTS.findIndex(etudiant => etudiant.id === etudiantId);
+    let etudiant;
 
-      etudiantModifiee.cours = cours
-      etudiantModifiee.nom = nom;
-      etudiantModifiee.prenom = prenom;
+    try {
 
-      ETUDIANTS[indiceEtudiant] = etudiantModifiee;
+      etudiantObjId = new mongoose.Types.ObjectId(etudiantId)
 
-      reponse.status(200).json({etudiant:etudiantModifiee});
+      etudiant = await Etudiant.findById(etudiantObjId);
+
+      etudiant.nom = nom;
+      etudiant.prenom = prenom;
+      etudiant = await Etudiant.findById(etudiantObjId).populate("cours");
+      etudiant.cours.forEach(async cours => {cours.etudiants.pull(etudiant); await cours.save()});
+
+      etudiant.cours = cours;
+      await etudiant.save();
+      etudiant = await Etudiant.findById(etudiantObjId).populate("cours");
+      etudiant.cours.forEach(async cours => {cours.etudiants.push(etudiant); await cours.save()});
+      await etudiant.save();
+      etudiant = await Etudiant.findById(etudiantObjId).populate("cours");
+      etudiant.cours.forEach(cours => {if(!cours){return next(new HttpErreur("Impossible de trouver le cours", 404));}});
+    } catch(err) {
+
+      console.log(err)
+
+      return next(
+        new HttpErreur("Erreur lors de la mise à jour du etudiant", 500)
+      );
+    }
+  
+    reponse.status(200).json({ etudiant: etudiant.toObject({ getters: true }) });
 
   };
 
