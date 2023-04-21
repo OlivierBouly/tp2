@@ -86,7 +86,7 @@ const updateCours = async (requete, reponse, next) => {
     const coursId = requete.params.coursId;
 
     let cours;
-    let prof
+    let prof;
     try {
 
         prof = await Professeur.findById(professeur).populate(cours);
@@ -96,19 +96,50 @@ const updateCours = async (requete, reponse, next) => {
     }
   
     if (!prof) {
-        console.log(professeur);
       return next(new HttpErreur("Professeur non trouvé selon le id"), 504);
     }
 
+  try {
+
+    cours = await Cours.findById(coursId).populate("professeur").populate("etudiants");
+  } catch (err){
+      console.log(err)
+      return next(new HttpErreur("Création de cours échouée", 500));
+  }
+
+  if (!cours) {
+    return next(new HttpErreur("Cours non trouvé selon le id"), 504);
+  }
+  
     try {
         
         coursObjId = new mongoose.Types.ObjectId(coursId)
-
-        cours = await Cours.findById(coursId).populate("professeur");
         
         cours.professeur.cours.pull(cours);
 
-        cours.professeur.save();
+        await cours.professeur.save();
+
+        cours = await Cours.findById(coursId).populate("professeur");
+
+        listEtudiant = await Etudiant.find().populate("cours").populate("cours.professeur");
+        listEtudiant.forEach(async etudiant =>{
+          if(cours.etudiants.includes(etudiant._id)) {
+            let index = etudiant.cours.indexOf(cours);
+            etudiant.cours.splice(index, 1);
+          }
+
+          await etudiant.save()
+        });
+
+        etudiants.forEach(async etudiant => {
+          etudiant = await Etudiant.findById(etudiant).populate("cours");
+          if(etudiant.cours.includes(cours)){
+          } else {
+            etudiant.cours.push(cours);
+          }
+
+          await etudiant.save();
+      });
 
         cours.titre = titre;
         cours.professeur = professeur;
@@ -120,7 +151,6 @@ const updateCours = async (requete, reponse, next) => {
         } else {
             prof.cours[index] = cours
         }
-
         await cours.save();
         await prof.save();
 
@@ -132,9 +162,7 @@ const updateCours = async (requete, reponse, next) => {
         new HttpErreur("Erreur lors de la mise à jour du cours", 500)
       );
     }
-
       reponse.status(200).json({cours:cours});
-
   };
 
   const supprimerCours = async (requete, reponse, next) => { 
