@@ -191,4 +191,4 @@ const ajouterCoursProf = async (requete, reponse, next) => {
   exports.creerProf = creerProf;
   exports.updateProf = updateProf;
   exports.supprimerProf = supprimerProf;
-  exports.ajouterCoursProf = ajouterCoursProf
+  exports.ajouterCoursProf = ajouterCoursProf;

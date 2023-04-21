@@ -146,8 +146,61 @@ const creerEtudiant = (async (requete, reponse, next) => {
     reponse.status(200).json({ message: "Etudiant supprimée" });
   };
 
+  const ajouterCoursEtudiant = async (requete, reponse, next) => {
+    const {coursId} = requete.body;
+    const etudiantId = requete.params.etudiantId;
+    etudiantObjId = new mongoose.Types.ObjectId(etudiantId);
+    coursObjId = new mongoose.Types.ObjectId(coursId);
+  
+    let etudiant;
+    try {
+      etudiant = await Etudiant.findById(etudiantObjId);
+      cours = await Cours.findById(coursObjId);
+    } catch (err){
+      console.log(err)
+      return next(
+        new HttpErreur("Erreur lors de l'ajout du cours", 500)
+      );
+    }
+    if(!etudiant){
+      return next(new HttpErreur("Impossible de trouver le etudiant", 404));
+    }
+    if(!cours){
+      return next(new HttpErreur("Impossible de trouver le cours", 404));
+    }
+  
+    if(etudiant.cours.includes(coursObjId)){
+      return next(new HttpErreur("Le cours est deja assigne a cet etudiant", 404)); 
+    }
+    try{
+  
+      
+      etudiant.cours.push(coursObjId);
+      
+      await etudiant.save();
+      
+      index = etudiant.cours.findIndex(cours => cours === coursObjId);
+  
+      etudiant = await Etudiant.findById(etudiantObjId).populate("cours");
+  
+      etudiant.cours[index].etudiants.push(etudiantObjId);
+  
+      await etudiant.cours[index].save()
+  
+      await etudiant.save()
+  
+      reponse.status(200).json({ etudiant: etudiant.toObject({ getters: true }) });
+    }catch(err){
+      console.log(err);
+      return next(
+        new HttpErreur("Erreur lors de l'ajout du cours", 500)
+      );
+    }
+  }
+
 
 exports.getEtudiantById = getEtudiantById;
 exports.creerEtudiant = creerEtudiant;
 exports.updateEtudiant = updateEtudiant;
 exports.supprimerEtudiant = supprimerEtudiant;
+exports.ajouterCoursEtudiant = ajouterCoursEtudiant;

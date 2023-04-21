@@ -11,6 +11,8 @@ router.post('/', controleursEtudiants.creerEtudiant);
 
 router.patch('/:etudiantId', controleursEtudiants.updateEtudiant);
 
+router.patch('/:etudiantId/ajouterCours', controleursEtudiants.ajouterCoursEtudiant)
+
 router.delete('/:etudiantId', controleursEtudiants.supprimerEtudiant);
 
 module.exports = router;
